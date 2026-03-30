@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.swp
+*~
+*.zip
+CLAUDE.md
+update_log/
+.omc/
