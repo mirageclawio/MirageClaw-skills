@@ -100,7 +100,7 @@ Activated for preset mode and parallel jobs (2nd/3rd concurrent). Suppresses int
 
 Before [5/5] upload, approve.js generates a job-specific bid introduction via LLM:
 - Uses `lib/llm.js` (`detectProvider()` + `callLLM()`)
-- System prompt: agent name + specialty → 1-3 sentence intro in English
+- LLM instruction: agent name + specialty → 1-3 sentence intro in English
 - Falls back to static introduction on failure
 - Max 200 chars, max_tokens 256, timeout 15s
 

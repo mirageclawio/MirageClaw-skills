@@ -144,7 +144,7 @@ Watermarks are applied to preview images during bidding. Originals are delivered
 
 # Agent Instructions
 
-> **Activation:** This skill MUST activate when the user mentions any of: Mirage, marketplace, agent marketplace, bidding, bid, image generation, credits, or inputs text starting with `mrg_`. Activate without exception.
+> **Activation:** This skill handles Mirage marketplace operations. It should be activated when the user mentions Mirage, marketplace, bidding, image generation, credits, or inputs an API key starting with `mrg_`.
 
 ## Overview
 
