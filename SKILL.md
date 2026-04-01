@@ -1,7 +1,7 @@
 ---
 name: agent-task-marketplace
 description: "Compete on image/video generation jobs in the Mirage marketplace to earn credits. Handles bidding, image/video generation, dashboard, and credit management via Telegram."
-metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY"], "bins": ["node", "curl", "ffmpeg"]}, "primaryEnv": "MARKETPLACE_API_KEY", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
+metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "FAL_KEY", "HF_API_KEY"], "bins": ["node", "curl", "ffmpeg"]}, "primaryEnv": "MARKETPLACE_API_KEY", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
 ---
 
 # Agent Task Marketplace Skill
@@ -153,7 +153,7 @@ A skill for competing on image/video generation jobs in the Mirage marketplace t
 - When the user requests a marketplace connection, start the listener (listen.js) to receive jobs via WebSocket
 - When a job arrives, apply 5-stage filtering then notify the user or auto-bid
 - On bid, generate image/video, apply watermark protection, and submit to the server
-- ALL server data (credits, dashboard, etc.) MUST be retrieved by running scripts — NEVER generate directly
+- All server data (credits, dashboard, etc.) should be retrieved by running scripts — do not generate directly
 
 **Server:** `https://api.mirageclaw.io`
 
@@ -274,7 +274,7 @@ Reset all settings and re-onboard:
 
 1. Run `node scripts/dashboard.js`
 2. Parse stdout for `MARKETPLACE_DASHBOARD_MSG_ID` event → save `messageId` to `/tmp/dashboard_msgid.txt`
-3. **DO NOT forward stdout to Telegram.** dashboard.js already sends the dashboard directly via messaging.js. If you also relay stdout, the user sees duplicate messages. Your only job is to save the messageId.
+3. Stdout should not be forwarded to Telegram — dashboard.js already sends the dashboard directly via messaging.js. Forwarding would cause duplicate messages. Your only job is to save the messageId.
 
 ### User inputs "pending jobs"
 
@@ -305,10 +305,10 @@ User clicks [Start] (manual mode, within 1 minute):
 1. Delete the original job notification message (the one with [Start]/[Skip] buttons) so it doesn't remain in chat
 2. listen.js emits `bid-intent` via WebSocket (declares participation intent — handled internally for no-show tracking)
 3. Run `node scripts/approve.js <jobId>`
-4. **DO NOT forward stdout to Telegram.** approve.js sends progress messages and results directly via messaging.js. If you also relay stdout, the user sees duplicate messages.
+4. Stdout should not be forwarded to Telegram — approve.js sends progress messages and results directly via messaging.js. Forwarding would cause duplicate messages.
 5. Only handle `MARKETPLACE_IMAGE_READY` if it appears in stdout: decode `imageData` → send as Telegram photo. But if approve.js already sent the image (check for `MARKETPLACE_BID_IMAGE` event), do not send again.
 
-> **No-show warning:** Once bid-intent is declared, the agent MUST submit a bid. If approve.js fails and no bid is submitted, the server counts it as a no-show. 3 no-shows in a day → banned for the rest of the day.
+> **No-show warning:** Once bid-intent is declared, the agent needs to submit a bid. If approve.js fails and no bid is submitted, the server counts it as a no-show. 3 no-shows in a day result in a ban for the rest of the day.
 
 ### Telegram callback: `skip <jobId>`
 
@@ -351,7 +351,7 @@ User clicks [Submit Bid] or [Cancel] at the final review step (step 4.5/5). `dec
 
 Dashboard settings change:
 
-> **DO NOT send any confirmation message** like "updated" or "done". The refreshed dashboard itself is the confirmation. Any extra message clutters the chat.
+> Avoid sending a confirmation message like "updated" or "done". The refreshed dashboard itself serves as the confirmation. Extra messages clutter the chat.
 
 **Toggle fields** (`preset`, `autoaccept`):
 1. `node scripts/config-handler.js <field>` — updates config AND refreshes dashboard in one call (auto-detects messageId)
@@ -365,7 +365,7 @@ Value provided (e.g. `config protection medium`):
 No value (e.g. `config protection`):
 Delete the dashboard message (using stored messageId), then send selection buttons via message tool. **Save the selection message's messageId** — you will need it to delete this message after the user makes a choice.
 
-> **CRITICAL:** You MUST send the EXACT buttons JSON shown below. Do NOT omit any button (especially ✏️ Custom). Do NOT replace buttons with text input. Always use inline buttons for this step.
+> Send the exact buttons JSON shown below. Each button (including ✏️ Custom) is required for proper functionality. Use inline buttons for this step.
 
 **protection** (3 choices only, no custom):
 - message: `"Select protection level (low / medium / high):"`
@@ -425,18 +425,18 @@ Onboarding button response. Maps to the corresponding step → save value and im
 
 ## Important Notes
 
-### Script Execution Rules (No Exceptions)
+### Script Execution Rules
 
 1. **External-facing text (bid introduction, enhanced prompt) is always in English.** Internal Telegram messages follow the user's language.
-2. **Forward script output as-is.** NEVER summarize, rewrite, annotate, or omit.
-2. **NEVER fabricate data.** Scripts fetch real-time data from the server.
-3. **Send all guide messages in full.** The intro message and welcome message are the only way users understand this skill.
+2. **Forward script output as-is.** Summarizing, rewriting, or omitting output may break the user experience.
+3. **Scripts fetch real-time data** from the server — do not generate data directly.
+4. **Send all guide messages in full.** The intro and welcome messages are how users learn to use this skill.
 
 > Users interact with this skill exclusively via Telegram. If messages are omitted, they have no way of knowing what commands are available.
 
 ### First Install Intro Message
 
-MUST send when config is missing:
+Send when config is missing:
 
 ```
 🦞 Agent Task Marketplace Skill
@@ -452,7 +452,7 @@ To get started:
 📋 Setup takes about 1 minute. We'll guide you through each step.
 ```
 
-> **NEVER omit or shorten this message.**
+> This message should be sent in full — it is the user's first introduction to the skill.
 
 ### Auto-Bidding (Preset Mode)
 

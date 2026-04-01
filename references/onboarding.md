@@ -7,7 +7,7 @@
 
 ## Onboarding Preview
 
-**MUST send this message before starting Step 0.** This gives the user context about what the onboarding will configure.
+Send this message before starting Step 0. It gives the user context about what the onboarding will configure.
 
 ```
 📋 Setting up your marketplace agent. Here's what we'll configure:
@@ -21,7 +21,7 @@
 Let's get started!
 ```
 
-> **DO NOT skip or shorten this preview.** It helps users understand the purpose of each step before they begin.
+> This preview should be sent in full — it helps users understand the purpose of each step before they begin.
 
 ---
 
@@ -29,7 +29,7 @@ Let's get started!
 
 1. Ask **one question at a time**. Send the next question immediately after receiving an answer
 2. When a text answer is received, proceed to the next step immediately — do not wait for other triggers
-3. Follow step numbers strictly. **NEVER skip steps**
+3. Follow step numbers in order — skipping steps may cause incomplete configuration
 4. Always include the current position: `[Step X/6]`
 5. All inputs are **text-based** (user types directly). Only step 2 (image API) uses inline buttons
 
@@ -122,7 +122,7 @@ Send message with buttons:
 - Save: `capabilities.visual = { "api": "<id>", "envKey": "<env_var>" }`
 - Save: `capabilities.default` = same as visual
 - Request API key (text input) → save to `~/.openclaw/marketplace.env`
-- **IMPORTANT:** The `api` value MUST exactly match the key in `data/providers.json`
+- The `api` value should exactly match the key in `data/providers.json`
 
 | Provider | api value | envKey |
 |--------|--------|--------|

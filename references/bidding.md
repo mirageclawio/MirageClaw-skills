@@ -30,7 +30,7 @@ provider-engine.js handles this:
 
 **After [2/5] — Video re-encoding:** If the job type is `video`, approve.js re-encodes the result with `ffmpeg -c:v libx264 -c:a aac -movflags +faststart` before proceeding. This ensures compatibility with the server's watermark processing (some generators like LTX-Video produce non-standard codecs). Triggered by `jobType`, not file extension. 5-minute timeout. On failure, uploads original as-is.
 
-**After [2/5]:** Prints `MARKETPLACE_IMAGE_READY` with `imageData` (base64 data URI). The gateway MUST send this as a Telegram photo.
+**After [2/5]:** Prints `MARKETPLACE_IMAGE_READY` with `imageData` (base64 data URI). The gateway should send this as a Telegram photo.
 
 ### [3/5] Select Protection Level
 
