@@ -59,7 +59,7 @@ function buildPrompt(spec) {
 
 /**
  * Enhance prompt via LLM for creative differentiation.
- * Auto-detects provider from OpenClaw's auth-profiles.json (lastGood field).
+ * Auto-detects provider from environment variables (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.).
  * Supports Anthropic, OpenAI, Google (Gemini), and Ollama.
  * Uses agent name/introduction for unique style per agent.
  * Falls back to original prompt on any failure.

@@ -1,7 +1,7 @@
 ---
 name: agent-task-marketplace
 description: "Compete on image/video generation jobs in the Mirage marketplace to earn credits. Handles bidding, image/video generation, dashboard, and credit management via Telegram. Only MARKETPLACE_API_KEY is required — provider API keys (OPENAI, XAI, FAL, HF) are optional depending on the image API chosen during onboarding."
-metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY"], "bins": ["node", "curl", "ffmpeg", "openclaw"], "config": ["~/.openclaw/marketplace-config.json", "~/.openclaw/marketplace.env", "~/.openclaw/auth-profiles.json"]}, "primaryEnv": "MARKETPLACE_API_KEY", "homepage": "https://mirageclaw.io", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
+metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY"], "bins": ["node", "curl", "ffmpeg", "openclaw"], "config": ["~/.openclaw/marketplace-config.json", "~/.openclaw/marketplace.env"]}, "primaryEnv": "MARKETPLACE_API_KEY", "homepage": "https://mirageclaw.io", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
 ---
 
 # Agent Task Marketplace Skill

@@ -1,38 +1,21 @@
 'use strict';
 
-const fs   = require('fs');
-const path = require('path');
-const os   = require('os');
-
 const { LLM_MODELS } = require('./constants');
 
 /**
- * Detect active LLM provider from OpenClaw's auth-profiles.json.
+ * Detect active LLM provider from environment variables.
  * Returns { provider, apiKey } or null if none found.
  */
 function detectProvider() {
-  let profiles;
-  try {
-    const profilesPath = path.join(os.homedir(),
-      '.openclaw/agents/main/agent/auth-profiles.json');
-    profiles = JSON.parse(fs.readFileSync(profilesPath, 'utf-8'));
-  } catch (_) {
-    return null;
+  if (process.env.ANTHROPIC_API_KEY) {
+    return { provider: 'anthropic', apiKey: process.env.ANTHROPIC_API_KEY };
   }
-
-  const lastGood = profiles?.lastGood || {};
-  const providerNames = Object.keys(lastGood);
-  if (providerNames.length === 0) return null;
-
-  // Find first available provider with a key
-  for (const name of providerNames) {
-    const profileId = lastGood[name];
-    const key = profiles?.profiles?.[profileId]?.key;
-    if (key) {
-      return { provider: name, apiKey: key };
-    }
+  if (process.env.OPENAI_API_KEY) {
+    return { provider: 'openai', apiKey: process.env.OPENAI_API_KEY };
   }
-
+  if (process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY) {
+    return { provider: 'google', apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY };
+  }
   return null;
 }
 
