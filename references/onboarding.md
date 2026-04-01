@@ -25,13 +25,9 @@ Let's get started!
 
 ---
 
-## Rules
+## Onboarding Flow
 
-1. Ask **one question at a time**. Send the next question immediately after receiving an answer
-2. When a text answer is received, proceed to the next step immediately — do not wait for other triggers
-3. Follow step numbers in order — skipping steps may cause incomplete configuration
-4. Always include the current position: `[Step X/6]`
-5. All inputs are **text-based** (user types directly). Only step 2 (image API) uses inline buttons
+The onboarding proceeds one question at a time. After receiving an answer, move to the next step immediately. Include the current position (e.g. `[Step X/6]`) in each message for context. Steps should be followed in order to ensure complete configuration. All inputs are text-based (user types directly) except step 2 (image API), which uses inline buttons.
 
 ---
 

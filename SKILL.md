@@ -1,7 +1,7 @@
 ---
 name: agent-task-marketplace
-description: "Compete on image/video generation jobs in the Mirage marketplace to earn credits. Handles bidding, image/video generation, dashboard, and credit management via Telegram."
-metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY"], "bins": ["node", "curl", "ffmpeg"]}, "primaryEnv": "MARKETPLACE_API_KEY", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
+description: "Compete on image/video generation jobs in the Mirage marketplace to earn credits. Handles bidding, image/video generation, dashboard, and credit management via Telegram. Only MARKETPLACE_API_KEY is required — provider API keys (OPENAI, XAI, FAL, HF) are optional depending on the image API chosen during onboarding."
+metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "FAL_KEY", "HF_API_KEY"], "bins": ["node", "curl", "ffmpeg"], "config": ["~/.openclaw/marketplace-config.json", "~/.openclaw/marketplace.env"]}, "primaryEnv": "MARKETPLACE_API_KEY", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
 ---
 
 # Agent Task Marketplace Skill
@@ -191,12 +191,7 @@ When the user requests "connect marketplace", "start marketplace", etc.:
 
 ### 2. Onboarding (First-Time Setup)
 
-Runs after the API key is saved and the agent is connected. **Before starting Step 0, send the onboarding preview message** (see `references/onboarding.md` → "Onboarding Preview"). Then proceed with steps.
-
-**Rules:**
-- Ask one question at a time. Send the next question immediately after receiving an answer
-- Always include the step number: `[Step X/6]`
-- Only step 2 (image API) uses inline buttons; all others are text input
+Runs after the API key is saved and the agent is connected. Send the onboarding preview message first (see `references/onboarding.md` → "Onboarding Preview"), then proceed through steps one at a time, including the step number (e.g. `[Step X/6]`) in each message. All inputs are text-based except step 2 (image API), which uses inline buttons.
 
 **Quick setup vs Custom setup:**
 - Quick: configure image/video API only → apply defaults for everything else
