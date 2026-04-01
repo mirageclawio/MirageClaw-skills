@@ -11,7 +11,7 @@ const { io }        = require('socket.io-client');
 const fs            = require('fs');
 const path          = require('path');
 const os            = require('os');
-const { execFileSync, spawnSync, spawn } = require('child_process');
+const { spawn } = require('child_process');
 
 const { CONFIG_PATH, PENDING_PATH, COMPLETED_PATH, COMMANDS_HELP, RELEASE_NOTES, loadCompleted, markCompleted, isCompleted } = require('./lib/constants');
 require('./lib/env').loadEnv();
@@ -385,18 +385,19 @@ function processJob(job, source) {
 }
 
 // ─── Catch-up: GET /jobs/open ─────────────────────────────────────────────
-function catchUp() {
+async function catchUp() {
   notify('MARKETPLACE_CATCHUP_START', {
     message: '🔍 Fetching open jobs (catch-up)...'
   });
 
   try {
-    const result = execFileSync('curl', [
-      '-sf', `${BASE_URL}/jobs/open`,
-      '-H', `Authorization: Bearer ${apiKey}`
-    ], { timeout: 10000 });
+    const res = await fetch(`${BASE_URL}/jobs/open`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const jobs = await res.json();
 
-    const jobs = JSON.parse(result.toString());
     if (!Array.isArray(jobs) || jobs.length === 0) {
       notify('MARKETPLACE_CATCHUP_DONE', {
         count: 0,
@@ -410,7 +411,6 @@ function catchUp() {
       message: `🔍 Catch-up — found ${jobs.length} open job(s). Processing...`
     });
 
-    // Catch-up: user decides (manual mode)
     jobs.forEach(job => processJob(job, 'catchup'));
 
   } catch (err) {
@@ -509,33 +509,36 @@ if (!apiKey) {
 }
 
 // ─── Profile sync (fetch latest from server on every startup) ───────────
-try {
-  const syncResult = execFileSync('curl', [
-    '-sf', `${BASE_URL}/agents/mine`,
-    '-H', `Authorization: Bearer ${apiKey}`
-  ], { timeout: 10000 });
-  const syncAgents = JSON.parse(syncResult.toString());
-  if (Array.isArray(syncAgents) && syncAgents.length > 0) {
-    const agent = syncAgents[0];
-    const oldName = config.agentName;
-    config.agentId = String(agent._id);
-    config.agentName = agent.name || config.agentName;
-    config.introduction = agent.description || config.introduction || '';
-    const tmp = CONFIG_PATH + '.tmp';
-    fs.writeFileSync(tmp, JSON.stringify(config, null, 2));
-    fs.renameSync(tmp, CONFIG_PATH);
-    if (oldName && oldName !== config.agentName) {
-      notify('MARKETPLACE_PROFILE_SYNCED', {
-        message: `🔄 Agent name updated: "${oldName}" → "${config.agentName}"`
-      });
+(async () => {
+  try {
+    const res = await fetch(`${BASE_URL}/agents/mine`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` },
+      signal: AbortSignal.timeout(10000)
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const syncAgents = await res.json();
+    if (Array.isArray(syncAgents) && syncAgents.length > 0) {
+      const agent = syncAgents[0];
+      const oldName = config.agentName;
+      config.agentId = String(agent._id);
+      config.agentName = agent.name || config.agentName;
+      config.introduction = agent.description || config.introduction || '';
+      const tmp = CONFIG_PATH + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify(config, null, 2));
+      fs.renameSync(tmp, CONFIG_PATH);
+      if (oldName && oldName !== config.agentName) {
+        notify('MARKETPLACE_PROFILE_SYNCED', {
+          message: `🔄 Agent name updated: "${oldName}" → "${config.agentName}"`
+        });
+      }
     }
+  } catch (_) {
+    // Non-blocking — profile sync failure should not prevent startup
+    notify('MARKETPLACE_WARNING', {
+      message: '⚠️ Profile sync skipped (server unreachable). Using cached config.'
+    });
   }
-} catch (_) {
-  // Non-blocking — profile sync failure should not prevent startup
-  notify('MARKETPLACE_WARNING', {
-    message: '⚠️ Profile sync skipped (server unreachable). Using cached config.'
-  });
-}
+})();
 
 const socket = io(BASE_URL, {
   path: '/ws',
