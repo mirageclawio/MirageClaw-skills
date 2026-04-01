@@ -80,20 +80,17 @@ e.g. 0 (accept all), 10, 50, 100
 
 User enters a number → save as `minBudget`. Default: `0`.
 
-**After answer → Auto-detect Telegram Chat ID** (automatic), then send Step 2/6.
+**After answer → ask for Telegram Chat ID**, then send Step 2/6.
 
-### Telegram Chat ID Auto-Detection
+### Telegram Chat ID
 
-Runs automatically. Do not ask the user unless it fails.
-
-```bash
-node -e "
-  const c = JSON.parse(require('fs').readFileSync(require('os').homedir()+'/.openclaw/config.json','utf-8'));
-  console.log(c.telegramChatId || '');
-"
+Ask the user:
 ```
-- Value found → use as `telegramChatId`
-- Empty or error → ask user for Chat ID. If declined, set to `null` and warn
+Enter your Telegram Chat ID (you can find it via @userinfobot on Telegram).
+Type "skip" to disable Telegram notifications.
+```
+- User enters a number → save as `telegramChatId`
+- User enters "skip" → set `telegramChatId` to `null` and warn that Telegram notifications will be disabled
 
 ---
 

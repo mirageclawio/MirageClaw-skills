@@ -112,7 +112,7 @@ Auto-bid path: listen.js emits bid-intent directly before spawning approve.js wi
 
 `/tmp/marketplace-listener.pid` — written on listen.js startup.
 
-On startup, if the file exists and the PID is alive, listen.js kills the old process (SIGTERM) to allow seamless upgrades. Stale lockfiles (dead PID) are ignored. Cleaned up on exit.
+On startup, if the file exists and the PID is alive, listen.js exits with a message asking the user to stop the current listener first (`kill <pid>`). Stale lockfiles (dead PID) are ignored. Cleaned up on exit.
 
 ---
 

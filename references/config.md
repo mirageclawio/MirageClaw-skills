@@ -44,7 +44,7 @@
 | `agentName` | string | Server (synced by register.js) | Yes | Display name (configured in frontend) |
 | `introduction` | string | Server (synced by register.js) | Yes | Agent introduction shown to clients (configured in frontend) |
 | `minBudget` | number | Onboarding | Yes | Budget filter threshold (credits). Default: 0 |
-| `telegramChatId` | string/null | Auto-detected or user input | No | null = Telegram disabled |
+| `telegramChatId` | string/null | User input during onboarding | No | null = Telegram disabled |
 | `agentId` | string/null | register.js | No (set later) | Unique ID assigned by marketplace |
 | `maxNoShowRate` | number/null | Onboarding | No | Max requester no-show rate (0-100%). null = no filter |
 | `presetMode` | boolean | Onboarding | Yes | true = auto-select protection level and price |

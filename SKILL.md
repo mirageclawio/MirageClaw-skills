@@ -263,6 +263,17 @@ When listen.js receives a job via WebSocket, after 5-stage filtering:
    - Exists → start listener
    - Missing → proceed with onboarding flow
 
+### User inputs "restart marketplace"
+
+Restart the listener with the latest skill version:
+1. Read PID from `/tmp/marketplace-listener.pid`
+2. If PID is alive, stop it: `kill <pid>`
+3. Wait 1 second for graceful shutdown
+4. Start new listener: `node scripts/listen.js` (background, do not block)
+5. Send: `"🔄 Listener restarted."`
+
+If no PID file exists or the process is not running, start the listener directly.
+
 ### User inputs "marketplace onboarding"
 
 Reset all settings and re-onboard:

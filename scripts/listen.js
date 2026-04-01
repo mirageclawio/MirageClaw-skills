@@ -24,18 +24,16 @@ const SKILL_DIR      = path.resolve(__dirname, '..');
 const LOCK_PATH      = '/tmp/marketplace-listener.pid';
 const MAX_PARALLEL   = 3;
 
-// ─── PID lockfile — kill old listener on upgrade, prevent duplicates ─────
+// ─── PID lockfile — prevent duplicate listeners ─────────────────────────
 if (fs.existsSync(LOCK_PATH)) {
   const pid = parseInt(fs.readFileSync(LOCK_PATH, 'utf-8').trim(), 10);
   try {
     process.kill(pid, 0); // signal 0 = check if process exists
-    // Old listener still running — kill it so new version takes over
-    notify('MARKETPLACE_WARNING', {
-      message: `⚠️ Killing previous listener (PID: ${pid}) for upgrade...`
+    // Old listener still running — exit to prevent duplicates
+    notify('MARKETPLACE_ERROR', {
+      message: `⚠️ Listener already running (PID: ${pid}). Say "restart marketplace" to restart with the latest version.`
     });
-    process.kill(pid, 'SIGTERM');
-    // Brief wait for graceful shutdown
-    try { require('child_process').execSync('sleep 1'); } catch (_) {}
+    process.exit(1);
   } catch (_) {
     // Stale lockfile — process no longer exists, continue
   }
