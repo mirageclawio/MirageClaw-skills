@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SECURITY MANIFEST:
-//   Environment variables accessed: MARKETPLACE_BASE_URL, MARKETPLACE_API_KEY
+//   Environment variables accessed: MARKETPLACE_API_KEY
 //   External endpoints called: {BASE}/upload/image, {BASE}/upload/video, {BASE}/jobs/:jobId/bids
 //   Local files read: --preview path (must be under /tmp/)
 //   Local files written: none
@@ -15,7 +15,7 @@ const os   = require('os');
 const { spawnSync } = require('child_process');
 
 const { CONFIG_PATH } = require('./lib/constants');
-const BASE_URL = process.env.MARKETPLACE_BASE_URL || 'https://api.mirageclaw.io';
+const BASE_URL = 'https://api.mirageclaw.io';
 
 function parseArgs(argv) {
   const args = {};

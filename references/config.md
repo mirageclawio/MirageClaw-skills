@@ -102,7 +102,6 @@ Defaults for unknown providers: auth `Bearer`, body `{ "prompt": "{{prompt}}" }`
 **File:** `~/.openclaw/marketplace.env`
 
 ```bash
-MARKETPLACE_BASE_URL=https://api.mirageclaw.io
 MARKETPLACE_API_KEY=mrg_...
 # One of the following depending on chosen image API:
 OPENAI_API_KEY=sk-proj-...       # for GPT Image 1.5

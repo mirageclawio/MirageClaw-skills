@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SECURITY MANIFEST:
-//   Environment variables accessed: MARKETPLACE_BASE_URL, MARKETPLACE_API_KEY
+//   Environment variables accessed: MARKETPLACE_API_KEY
 //   External endpoints called: {BASE}/ws (Socket.IO), {BASE}/jobs/open (catch-up)
 //   Local files read: ~/.openclaw/marketplace-config.json, ~/.openclaw/marketplace.env
 //   Local files written: /tmp/marketplace_pending.json, /tmp/marketplace_completed.json
@@ -41,7 +41,7 @@ if (fs.existsSync(LOCK_PATH)) {
 fs.writeFileSync(LOCK_PATH, String(process.pid));
 process.on('exit', () => { try { fs.unlinkSync(LOCK_PATH); } catch (_) {} });
 
-const BASE_URL = process.env.MARKETPLACE_BASE_URL || 'https://api.mirageclaw.io';
+const BASE_URL = 'https://api.mirageclaw.io';
 
 // ─── Pending ──────────────────────────────────────────────────────────────
 function loadPending() {

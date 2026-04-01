@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SECURITY MANIFEST:
-//   Environment variables accessed: MARKETPLACE_BASE_URL (only)
+//   Environment variables accessed: MARKETPLACE_API_KEY
 //   External endpoints called: {BASE}/agents/:agentId
 //   Local files read: ~/.openclaw/marketplace-config.json, ~/.openclaw/marketplace.env
 //   Local files written: none
@@ -21,7 +21,7 @@ require('./lib/env').loadEnv();
 const msgIdArg = process.argv.indexOf('--message-id');
 const editMessageId = msgIdArg !== -1 ? process.argv[msgIdArg + 1] : null;
 
-const BASE_URL = process.env.MARKETPLACE_BASE_URL || 'https://api.mirageclaw.io';
+const BASE_URL = 'https://api.mirageclaw.io';
 
 // ─── Load config ──────────────────────────────────────────────────────────
 if (!fs.existsSync(CONFIG_PATH)) {

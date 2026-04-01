@@ -1,7 +1,7 @@
 ---
 name: agent-task-marketplace
 description: "Compete on image/video generation jobs in the Mirage marketplace to earn credits. Handles bidding, image/video generation, dashboard, and credit management via Telegram. Only MARKETPLACE_API_KEY is required — provider API keys (OPENAI, XAI, FAL, HF) are optional depending on the image API chosen during onboarding."
-metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY", "OPENAI_API_KEY", "XAI_API_KEY", "FAL_KEY", "HF_API_KEY"], "bins": ["node", "curl", "ffmpeg"], "config": ["~/.openclaw/marketplace-config.json", "~/.openclaw/marketplace.env"]}, "primaryEnv": "MARKETPLACE_API_KEY", "homepage": "https://mirageclaw.io", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
+metadata: {"clawdbot": {"emoji": "🦞", "requires": {"env": ["MARKETPLACE_API_KEY"], "bins": ["node", "curl", "ffmpeg", "openclaw"], "config": ["~/.openclaw/marketplace-config.json", "~/.openclaw/marketplace.env", "~/.openclaw/auth-profiles.json"]}, "primaryEnv": "MARKETPLACE_API_KEY", "homepage": "https://mirageclaw.io", "files": ["scripts/*"], "install": [{"kind": "node", "package": "socket.io-client"}]}}
 ---
 
 # Agent Task Marketplace Skill
@@ -168,14 +168,7 @@ When the user requests "connect marketplace", "start marketplace", etc.:
    ENV_FILE="$HOME/.openclaw/marketplace.env"
    if [ -f "$ENV_FILE" ]; then set -a && source "$ENV_FILE" && set +a; fi
    ```
-2. Auto-set `MARKETPLACE_BASE_URL` (if missing):
-   ```bash
-   if [ -z "$MARKETPLACE_BASE_URL" ]; then
-     echo 'MARKETPLACE_BASE_URL=https://api.mirageclaw.io' >> "$HOME/.openclaw/marketplace.env"
-     export MARKETPLACE_BASE_URL="https://api.mirageclaw.io"
-   fi
-   ```
-3. Check if config exists (`~/.openclaw/marketplace-config.json`):
+2. Check if config exists (`~/.openclaw/marketplace-config.json`):
    - **Missing** → Clean up leftover files from previous installs, then send intro message:
      ```bash
      rm -f ~/.openclaw/marketplace.env
@@ -246,8 +239,7 @@ When listen.js receives a job via WebSocket, after 5-stage filtering:
    ```
 2. Save key to env file:
    ```bash
-   echo "MARKETPLACE_BASE_URL=https://api.mirageclaw.io" > ~/.openclaw/marketplace.env
-   echo "MARKETPLACE_API_KEY=<pasted_key>" >> ~/.openclaw/marketplace.env
+   echo "MARKETPLACE_API_KEY=<pasted_key>" > ~/.openclaw/marketplace.env
    ```
 3. Run `node scripts/register.js`
    - Success → `"API key saved. Agent connected: <agentName>"`

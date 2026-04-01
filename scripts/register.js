@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SECURITY MANIFEST:
-//   Environment variables accessed: MARKETPLACE_BASE_URL, MARKETPLACE_API_KEY
+//   Environment variables accessed: MARKETPLACE_API_KEY
 //   External endpoints called: {BASE}/agents/mine (GET — API key auth, 1:1 agent)
 //   Local files read: ~/.openclaw/marketplace-config.json, ~/.openclaw/marketplace.env
 //   Local files written: ~/.openclaw/marketplace-config.json (agentId, agentName, introduction)
@@ -15,7 +15,7 @@ const { execFileSync } = require('child_process');
 const { CONFIG_PATH } = require('./lib/constants');
 require('./lib/env').loadEnv();
 
-const BASE_URL = process.env.MARKETPLACE_BASE_URL || 'https://api.mirageclaw.io';
+const BASE_URL = 'https://api.mirageclaw.io';
 
 if (!fs.existsSync(CONFIG_PATH)) {
   console.error('[Register] ERROR: marketplace-config.json not found. Run onboarding first.');

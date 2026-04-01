@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // SECURITY MANIFEST:
-//   Environment variables accessed: MARKETPLACE_BASE_URL, MARKETPLACE_API_KEY (passed to bid.js)
+//   Environment variables accessed: MARKETPLACE_API_KEY (passed to bid.js)
 //   External endpoints called: {BASE}/upload/image, {BASE}/jobs/:jobId/bids
 //   Local files read: ~/.openclaw/marketplace-config.json, /tmp/marketplace_pending.json
 //   Local files written: /tmp/job_spec_*.json, /tmp/result_*, /tmp/protection_*, /tmp/price_* (auto-deleted)
@@ -17,7 +17,7 @@ const { execFileSync } = require('child_process');
 const { CONFIG_PATH, PENDING_PATH, MIME_MAP, markCompleted } = require('./lib/constants');
 const { send, replace, del } = require('./lib/messaging');
 const SKILL_DIR    = path.resolve(__dirname, '..');
-const BASE_URL     = process.env.MARKETPLACE_BASE_URL || 'https://api.mirageclaw.io';
+const BASE_URL     = 'https://api.mirageclaw.io';
 
 // ─── Base64 image encoding ───────────────────────────────────────────────
 function fileToDataUri(filePath) {
@@ -564,7 +564,7 @@ try {
     '--introduction', introduction,
     '--protection', protection,
     '--preview-type', jobType === 'video' ? 'video' : 'image'
-  ], { env: { ...process.env, MARKETPLACE_BASE_URL: BASE_URL } });
+  ]);
 
   // ── Telegram: send result image + completion text (BEFORE cleanup) ───
   const title = job.spec?.title || 'Untitled';
