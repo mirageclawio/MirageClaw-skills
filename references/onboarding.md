@@ -157,6 +157,7 @@ Request API key → save to env → **send Step 3/6**
 
 ### Local Script
 
+- For script setup instructions, see `references/local-script-guide.md`
 - Request absolute script path (text input)
 - Save: `capabilities.visual = "<path>"`, `capabilities.default = "<path>"`
 - No API key needed

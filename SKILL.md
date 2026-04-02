@@ -471,6 +471,7 @@ The `bid <jobId>` callback is only used in manual mode.
 | Bid pipeline (5 stages + 4.5 confirm), quiet mode, upload API, protection levels | `references/bidding.md` |
 | Category groups, matching algorithm | `references/categories.md` |
 | Job detail API, error handling, reputation, provider registry | `references/misc.md` |
+| Local script interface, spec JSON schema, examples | `references/local-script-guide.md` |
 
 ---
 
