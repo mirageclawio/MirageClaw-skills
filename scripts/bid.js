@@ -12,6 +12,7 @@ require('./lib/env').loadEnv();
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
+const { spawnSync } = require('child_process');
 
 const { CONFIG_PATH } = require('./lib/constants');
 const BASE_URL = 'https://api.mirageclaw.io';
@@ -73,78 +74,84 @@ const mimeType = MIME_MAP[ext] || 'image/png';
 // ── Determine preview type (auto-detect or CLI override) ──────────────────
 const previewType = args['preview-type'] || (isVideo(ext) ? 'video' : 'image');
 
-// ── Main (async for fetch) ───────────────────────────────────────────────
-(async () => {
-  // ── Step 1: Upload ─────────────────────────────────────────────────────
-  const uploadUrl = previewType === 'video'
-    ? `${BASE_URL}/upload/video?protection=${protection}`
-    : `${BASE_URL}/upload/image?purpose=bid_preview&protection=${protection}`;
-
-  console.log(`[Bid] Uploading preview (${mimeType}, type=${previewType}, protection=${protection})...`);
-
-  const fileBuffer = fs.readFileSync(previewPath);
-  const blob = new Blob([fileBuffer], { type: mimeType });
-  const form = new FormData();
-  form.append('file', blob, path.basename(previewPath));
-
-  let uploadRes;
-  try {
-    const res = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${apiKey}` },
-      body: form
-    });
-    if (!res.ok) {
-      console.error(`[Bid] ERROR: Upload failed (HTTP ${res.status})`);
-      console.error('[Bid] Response:', await res.text());
-      process.exit(1);
-    }
-    uploadRes = await res.json();
-  } catch (err) {
-    console.error('[Bid] ERROR: Upload failed:', err.message);
-    process.exit(1);
+// ── Helper: run curl and return { status, body } ──────────────────────────
+function curlRequest(curlArgs) {
+  // Use -s (silent) + -w to capture HTTP status without -v (which leaks auth headers)
+  const result = spawnSync('curl', ['-s', '-w', '\n%{http_code}', ...curlArgs], {
+    encoding: 'utf-8',
+    maxBuffer: 50 * 1024 * 1024
+  });
+  if (result.error) {
+    return { error: result.error.message, status: 0, body: '' };
   }
+  const lines = (result.stdout || '').trimEnd().split('\n');
+  const status = parseInt(lines.pop(), 10) || 0;
+  const body = lines.join('\n');
+  return { status, body, error: null };
+}
 
-  const previewUrl = uploadRes.url;
-  const originalPath = uploadRes.originalPath || null;
-  if (!previewUrl) {
-    console.error('[Bid] ERROR: No URL in upload response');
-    process.exit(1);
-  }
+// ── Step 1: Upload ─────────────────────────────────────────────────────────
+const uploadUrl = previewType === 'video'
+  ? `${BASE_URL}/upload/video?protection=${protection}`
+  : `${BASE_URL}/upload/image?purpose=bid_preview&protection=${protection}`;
+
+console.log(`[Bid] Uploading preview (${mimeType}, type=${previewType}, protection=${protection})...`);
+
+const upload = curlRequest([
+  '-X', 'POST',
+  uploadUrl,
+  '-H', `Authorization: Bearer ${apiKey}`,
+  '-F', `file=@${previewPath};type=${mimeType}`
+]);
+
+if (upload.error) {
+  console.error('[Bid] ERROR: curl failed:', upload.error);
+  process.exit(1);
+}
+
+if (upload.status >= 400 || !upload.body) {
+  console.error(`[Bid] ERROR: Upload failed (HTTP ${upload.status})`);
+  console.error('[Bid] Response:', upload.body);
+  process.exit(1);
+}
+
+let previewUrl, originalPath;
+try {
+  const uploadRes = JSON.parse(upload.body.trim());
+  previewUrl = uploadRes.url;
+  originalPath = uploadRes.originalPath || null;  // original path for watermark-protected download
+  if (!previewUrl) throw new Error('No URL in response');
   console.log(`[Bid] 📤 Uploaded: ${previewUrl}`);
   if (originalPath) console.log(`[Bid] 🔒 Original path: ${originalPath}`);
+} catch (err) {
+  console.error('[Bid] ERROR: Failed to parse upload response:', upload.body);
+  process.exit(1);
+}
 
-  // ── Step 2: Submit bid ─────────────────────────────────────────────────
-  const bidPayload = {
-    agentId: config.agentId,
-    introduction: args.introduction,
-    preview: previewUrl,
-    originalPath: originalPath,
-    price: Number(args.price),
-    previewType: previewType
-  };
+// ── Step 2: Submit bid ─────────────────────────────────────────────────────
+const bidPayload = JSON.stringify({
+  agentId: config.agentId,
+  introduction: args.introduction,
+  preview: previewUrl,
+  originalPath: originalPath,  // required for original file download after acceptance
+  price: Number(args.price),
+  previewType: previewType
+});
 
-  try {
-    const res = await fetch(`${BASE_URL}/jobs/${args['job-id']}/bids`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify(bidPayload)
-    });
+const bid = curlRequest([
+  '-X', 'POST',
+  `${BASE_URL}/jobs/${args['job-id']}/bids`,
+  '-H', 'Content-Type: application/json',
+  '-H', `Authorization: Bearer ${apiKey}`,
+  '-d', bidPayload
+]);
 
-    if (res.status === 409) { console.log(`[Bid] SKIP — Already bid on Job #${args['job-id']}`); process.exit(0); }
-    if (res.status === 400) { console.log(`[Bid] SKIP — Job #${args['job-id']} no longer open`); process.exit(0); }
+if (bid.status === 409) { console.log(`[Bid] SKIP — Already bid on Job #${args['job-id']}`); process.exit(0); }
+if (bid.status === 400) { console.log(`[Bid] SKIP — Job #${args['job-id']} no longer open`); process.exit(0); }
 
-    if (!res.ok) {
-      console.error(`[Bid] ERROR: Bid failed (HTTP ${res.status}):`, await res.text());
-      process.exit(1);
-    }
+if (bid.error || bid.status >= 400) {
+  console.error(`[Bid] ERROR: Bid failed (HTTP ${bid.status}):`, bid.body);
+  process.exit(1);
+}
 
-    console.log(`[Bid] ✅ Bid submitted — Job #${args['job-id']} @ ${args.price}`);
-  } catch (err) {
-    console.error(`[Bid] ERROR: Bid failed: ${err.message}`);
-    process.exit(1);
-  }
-})();
+console.log(`[Bid] ✅ Bid submitted — Job #${args['job-id']} @ ${args.price}`);

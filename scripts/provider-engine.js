@@ -3,8 +3,6 @@
 const fs   = require('fs');
 const path = require('path');
 
-const { detectProvider, callLLM } = require('./lib/llm');
-
 // Map Content-Type to file extension
 const CONTENT_TYPE_EXT = {
   'image/png': '.png',
@@ -55,59 +53,6 @@ function buildPrompt(spec) {
     spec.color && `colors: ${spec.color}`,
     spec.title && `subject: ${spec.title}`,
   ].filter(Boolean).join(', ');
-}
-
-/**
- * Enhance prompt via LLM for creative differentiation.
- * Auto-detects provider from environment variables (ANTHROPIC_API_KEY, OPENAI_API_KEY, etc.).
- * Supports Anthropic, OpenAI, Google (Gemini), and Ollama.
- * Uses agent name/introduction for unique style per agent.
- * Falls back to original prompt on any failure.
- * @param {string} rawPrompt - original prompt from buildPrompt()
- * @param {object} spec - job spec for context
- * @returns {Promise<string>} enhanced prompt or original on failure
- */
-async function enhancePrompt(rawPrompt, spec) {
-  const os = require('os');
-
-  // 1. Detect active LLM provider
-  const detected = detectProvider();
-  if (!detected) return rawPrompt;
-
-  // 2. Load agent identity for unique style
-  let agentName = 'an AI artist';
-  let agentIntro = 'creative and versatile';
-  try {
-    const configPath = path.join(os.homedir(), '.openclaw/marketplace-config.json');
-    const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
-    if (config.agentName) agentName = config.agentName;
-    if (config.introduction) agentIntro = config.introduction;
-  } catch (_) {}
-
-  const mediaType = spec.type === 'video' ? 'video' : 'image';
-
-  const systemPrompt = `You are ${agentName}, a creative ${mediaType} generation prompt expert. Your style: ${agentIntro}. Rewrite the given job spec into a detailed, vivid ${mediaType} generation prompt that reflects YOUR unique artistic perspective. Output ONLY the enhanced prompt in English, nothing else — no explanations, no quotes, no prefix.`;
-
-  const userMessage = [
-    `Job title: ${spec.title || ''}`,
-    `Category: ${spec.category || ''}`,
-    `Style: ${spec.style || ''}`,
-    `Mood: ${spec.mood || ''}`,
-    `Colors: ${spec.color || ''}`,
-    `Description: ${spec.description || ''}`,
-    '',
-    `Original prompt: ${rawPrompt}`,
-    '',
-    `Rewrite this as a detailed ${mediaType} generation prompt in your unique style.`
-  ].join('\n');
-
-  // 3. Call LLM based on detected provider
-  try {
-    const enhanced = await callLLM(detected.provider, detected.apiKey, systemPrompt, userMessage, { maxTokens: 512 });
-    return enhanced || rawPrompt;
-  } catch (_) {
-    return rawPrompt;
-  }
 }
 
 // ── Fetch with retry (5xx and network errors only) ──────────────────────────
@@ -166,8 +111,7 @@ async function callProvider(capability, specPath, resultBase) {
   if (!apiKey) throw new Error(`Missing env: ${capability.envKey}`);
 
   const spec = JSON.parse(fs.readFileSync(specPath, 'utf-8'));
-  const rawPrompt = buildPrompt(spec);
-  const prompt = await enhancePrompt(rawPrompt, spec);
+  const prompt = buildPrompt(spec);
   const provider = resolveProvider(capability);
 
   if (!provider.endpoint) {

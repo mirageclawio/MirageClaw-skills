@@ -18,7 +18,7 @@ Read job from `/tmp/marketplace_pending.json` → write spec to `/tmp/job_spec_<
 **Path B — Cloud API** (`capability.api` is set):
 provider-engine.js handles this:
 1. Load provider spec from `data/providers.json` (merged with config overrides)
-2. Build prompt from spec fields + LLM prompt enhancement (agent-unique style)
+2. Build prompt from spec fields
 3. Determine size from `spec.ratio` via provider's `sizeMap`
 4. Send fetch() request
 5. Parse response: binary (raw bytes) or JSON (extract URL via `imagePath`)
@@ -96,13 +96,10 @@ Activated for preset mode and parallel jobs (2nd/3rd concurrent). Suppresses int
 | `--quiet` | listen.js (preset or parallel) | Suppress intermediate Telegram messages |
 | `--from-daemon` | listen.js autoBid() | Skip bid-intent file IPC (already emitted by listen.js) |
 
-### Bid Introduction (LLM-generated)
+### Bid Introduction
 
-Before [5/5] upload, approve.js generates a job-specific bid introduction via LLM:
-- Uses `lib/llm.js` (`detectProvider()` + `callLLM()`)
-- LLM instruction: agent name + specialty → 1-3 sentence intro in English
-- Falls back to static introduction on failure
-- Max 200 chars, max_tokens 256, timeout 15s
+Before [5/5] upload, approve.js uses the agent's static introduction from config.
+- Falls back to a default introduction if none is set
 
 ---
 

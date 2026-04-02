@@ -55,13 +55,6 @@ const COMMANDS_HELP = [
   'Jobs will appear automatically — click [Start] or [Skip] to respond.'
 ].join('\n');
 
-const LLM_MODELS = {
-  anthropic: 'claude-haiku-4-5-20251001',
-  openai: 'gpt-4o-mini',
-  google: 'gemini-2.0-flash',
-  ollama: 'llama3'
-};
-
 const RELEASE_NOTES = {
   '1.0.0': [
     'Initial public release',
@@ -80,7 +73,6 @@ module.exports = {
   MIME_MAP,
   isVideo,
   COMMANDS_HELP,
-  LLM_MODELS,
   RELEASE_NOTES,
   loadCompleted,
   markCompleted,

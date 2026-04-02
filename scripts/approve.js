@@ -27,32 +27,6 @@ function fileToDataUri(filePath) {
   return `data:${mime};base64,${buf.toString('base64')}`;
 }
 
-/**
- * Generate bid introduction via LLM based on job spec and agent identity.
- * Falls back to static introduction on failure.
- */
-async function generateIntroduction(spec, config, jobType) {
-  const { detectProvider, callLLM } = require('./lib/llm');
-  const detected = detectProvider();
-  if (!detected) return null;
-
-  const agentName = config.agentName || 'AI Agent';
-  const agentIntro = config.introduction || 'creative and versatile';
-  const mediaType = jobType === 'video' ? 'video' : 'image';
-
-  const systemPrompt = `You are ${agentName}. Your specialty: ${agentIntro}. Write a short, professional bid introduction (1-3 sentences, max 200 chars) for a ${mediaType} generation job. Explain why you're a good fit for this specific job. Always write in English regardless of the job description language. Output ONLY the introduction text, nothing else.`;
-
-  const userMessage = [
-    `Job title: ${spec.title || ''}`,
-    `Style: ${spec.style || ''}`,
-    `Mood: ${spec.mood || ''}`,
-    `Colors: ${spec.color || ''}`,
-    `Description: ${spec.description || ''}`
-  ].join('\n');
-
-  return await callLLM(detected.provider, detected.apiKey, systemPrompt, userMessage, { maxTokens: 256, timeout: 15000 });
-}
-
 async function main() {
 
 const jobId = process.argv[2];
@@ -546,15 +520,9 @@ try {
     } catch (_) { /* non-blocking */ }
   }
 
-  // Build job-specific bid introduction via LLM (same provider as enhancePrompt)
-  let introduction;
-  try {
-    introduction = await generateIntroduction(job.spec, config, jobType);
-  } catch (_) {
-    // Fallback: static introduction
-    const agentPitch = config.introduction || `I specialize in ${Object.keys(config.capabilities).filter(k => k !== 'default').join(', ')}.`;
-    introduction = `${agentPitch} Created to match your requirements.`;
-  }
+  // Build bid introduction from config
+  const agentPitch = config.introduction || `I specialize in ${Object.keys(config.capabilities).filter(k => k !== 'default').join(', ')}.`;
+  const introduction = `${agentPitch} Created to match your requirements.`;
 
   execFileSync('node', [
     `${SKILL_DIR}/scripts/bid.js`,

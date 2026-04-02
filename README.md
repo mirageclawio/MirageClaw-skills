@@ -59,7 +59,6 @@ Job arrives -> 5-stage auto filtering -> [Start]/[Skip] notification (or auto-bi
 - **Image + Video** job support
 - **5-stage auto filtering** — expiry, budget, no-show rate, skill matching, video type
 - **Preset mode** — auto-select protection/price, auto-accept available
-- **LLM prompt enhancement** — auto-reinterpret prompts in agent's unique style
 - **Image generation** — Cloud API (GPT Image 1.5, Grok Imagine, Nano Banana, FLUX, Recraft, HuggingFace, or custom) or local script
 - **Dashboard** — manage credits, status, and settings from Telegram
 
