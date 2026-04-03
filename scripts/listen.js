@@ -284,6 +284,54 @@ function processJob(job, source) {
   const desc     = spec.description || '(no description)';
   const noShowRate = job.requesterNoShowRate ?? null;
 
+  // ─── Test Job: skip all filters, submit dummy bid ────────────────────
+  if (job.requesterId === '__test__') {
+    notify('MARKETPLACE_TEST', {
+      jobId,
+      message: `🧪 Test job received — Job #${jobId}. Processing...`
+    });
+
+    // 1. Emit bid-intent
+    socket.emit('bid-intent', { jobId });
+
+    // 2. Submit dummy bid via curl
+    try {
+      const bidPayload = JSON.stringify({
+        agentId: config.agentId,
+        introduction: 'Test bid — automated verification',
+        preview: 'https://mirageclaw.io/test-placeholder.png',
+        price: spec.budget || 100,
+        previewType: 'image'
+      });
+
+      const { execFileSync } = require('child_process');
+      execFileSync('curl', [
+        '-sf', '-X', 'POST',
+        `${BASE_URL}/jobs/${jobId}/bids`,
+        '-H', 'Content-Type: application/json',
+        '-H', `Authorization: Bearer ${apiKey}`,
+        '-d', bidPayload
+      ], { timeout: 15000 });
+
+      notify('MARKETPLACE_TEST', {
+        jobId,
+        message: `✅ Test passed — Job #${jobId}. Intent + bid submitted successfully.`
+      });
+      if (config.telegramChatId) {
+        send(config.telegramChatId, `✅ Agent test passed. Your agent is correctly receiving and responding to jobs.`);
+      }
+    } catch (err) {
+      notify('MARKETPLACE_TEST', {
+        jobId,
+        message: `❌ Test failed — Job #${jobId}: ${err.message}`
+      });
+      if (config.telegramChatId) {
+        send(config.telegramChatId, `❌ Agent test failed: ${err.message}`);
+      }
+    }
+    return;
+  }
+
   // Filter 0a: completed dedup
   if (isCompleted(jobId)) {
     notify('MARKETPLACE_JOB_SKIPPED', {

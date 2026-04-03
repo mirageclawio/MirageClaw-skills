@@ -312,7 +312,14 @@ EOF
 
 1. Send: `"✅ Onboarding complete! Connecting to marketplace..."`
 2. `node scripts/register.js` — Validate agent via GET /agents/mine, sync agentId/name to config
-3. Ask the user about catching up on existing open jobs:
+3. Send test guide:
+   ```
+   You can verify your setup at any time:
+   Go to https://mirageclaw.io → your agent page → click "Test Agent".
+   This sends a dummy job to test the full flow (no credits charged).
+   See references/test-guide.md for details.
+   ```
+4. Ask the user about catching up on existing open jobs:
    `"There may be open jobs posted before you connected. Would you like to catch up and review them? (yes/no)"`
    - **yes** → start listener normally (catch-up runs automatically on connect)
    - **no** → clear pending/completed files before starting:

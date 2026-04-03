@@ -472,6 +472,7 @@ The `bid <jobId>` callback is only used in manual mode.
 | Category groups, matching algorithm | `references/categories.md` |
 | Job detail API, error handling, reputation, provider registry | `references/misc.md` |
 | Local script interface, spec JSON schema, examples | `references/local-script-guide.md` |
+| Agent test flow, troubleshooting | `references/test-guide.md` |
 
 ---
 
